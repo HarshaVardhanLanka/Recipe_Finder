@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Finder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>Recipe Finder</h1>
+    <p>Discover delicious recipes based on the ingredients you already have!</p>
+  </div>
+
+  <div class="container">
+    <div class="form-group">
+      <label for="ingredients">Enter Ingredients(comma-separated):</label>
+      <input type="text" id="ingredients" placeholder="e.g., tomato, cheese, bread">
+    </div>
+    <div class="form-group">
+      <label for="diet">Dietary Preference (optional):</label>
+      <select id="diet">
+        <option value="">None</option>
+        <option value="vegan">Vegan</option>
+        <option value="vegetarian">Vegetarian</option>
+        <option value="non-vegetarian">Non-Vegetarian</option>
+        <option value="gluten-free">Gluten-Free</option>
+        <option value="low-carb">Low Carb</option>
+        <option value="paleo">Paleo</option>
+      </select>
+    </div>
+    <button class="button" onclick="findRecipes()">Find Recipes</button>
+
+    <div class="recipes" id="recipes"></div>
+  </div>
+  <div class="container">
+    <h2>Your Favorite Recipes</h2>
+    <div id="favorites"></div>
+  </div>
+
+
+  <footer>
+    <p>© 2025 Recipe Finder | Built with Spoonacular API</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    async function findRecipes() {
+      const ingredients = document.getElementById("ingredients").value.trim();
+      const diet = document.getElementById("diet").value.trim();
+      const recipesDiv = document.getElementById("recipes");
+
+      // Clear previous results
+      recipesDiv.innerHTML = "";
+
+      if (!ingredients) {
+        alert("Please enter at least one ingredient.");
+        return;
+      }
+
+      const apiKey = "2374e479143146c7a21c4e09c4e1ae04"; // Replace with your actual Spoonacular API key
+
+      try {
+        const response = await fetch(
+          `https://api.spoonacular.com/recipes/complexSearch?apiKey=${apiKey}&includeIngredients=${ingredients}&diet=${diet}&number=20&addRecipeInformation=true`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch recipes. Please check your API key or input.");
+        }
+
+        const data = await response.json();
+
+        if (data.results.length === 0) {
+          recipesDiv.innerHTML = "<p>No recipes found. Try different ingredients or filters.</p>";
+          return;
+        }
+
+        data.results.forEach((recipe) => {
+          const recipeCard = document.createElement("div");
+          recipeCard.className = "recipe";
+
+          recipeCard.innerHTML = `
+            <img src="${recipe.image}" alt="${recipe.title}">
+            <div>
+              <h3>${recipe.title}</h3>
+              <p><strong>Preparation Time:</strong> ${recipe.readyInMinutes} minutes</p>
+              <p><strong>Ingredients:</strong> ${
+                recipe.missedIngredients?.map((ing) => ing.name).join(", ") || "N/A"
+              }</p>
+              <a href="${recipe.sourceUrl}" target="_blank">View Full Recipe</a>
+              <button onclick="saveRecipe('${recipe.title}', '${recipe.image}', '${recipe.sourceUrl}')">Save Recipe</button>
+            </div>
+          `;
+
+          recipesDiv.appendChild(recipeCard);
+        });
+      } catch (error) {
+        recipesDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+      }
+    }
+
+    function saveRecipe(title, image, url) {
+      const savedRecipes = JSON.parse(localStorage.getItem("favoriteRecipes")) || [];
+      const newRecipe = { title, image, url };
+
+      // Avoid duplicate entries
+      if (savedRecipes.some(recipe => recipe.title === title)) {
+        alert("Recipe already saved!");
+        return;
+      }
+
+      savedRecipes.push(newRecipe);
+      localStorage.setItem("favoriteRecipes", JSON.stringify(savedRecipes));
+      alert("Recipe saved successfully!");
+      displayFavorites();
+    }
+
+    function displayFavorites() {
+      const favoritesDiv = document.getElementById("favorites");
+      const savedRecipes = JSON.parse(localStorage.getItem("favoriteRecipes")) || [];
+
+      favoritesDiv.innerHTML = ""; // Clear existing recipes
+
+      if (savedRecipes.length === 0) {
+        favoritesDiv.innerHTML = "<p>No favorite recipes saved yet.</p>";
+        return;
+      }
+
+      savedRecipes.forEach((recipe) => {
+        const favoriteCard = document.createElement("div");
+        favoriteCard.className = "favorite";
+
+        favoriteCard.innerHTML = `
+          <img src="${recipe.image}" alt="${recipe.title}">
+          <div>
+            <h3>${recipe.title}</h3>
+            <a href="${recipe.url}" target="_blank">View Full Recipe</a>
+          </div>
+        `;
+
+        favoritesDiv.appendChild(favoriteCard);
+      });
+    }
+
+    // Display favorites on page load
+    window.onload = displayFavorites;
+  </script>
+</body>
+</html>
