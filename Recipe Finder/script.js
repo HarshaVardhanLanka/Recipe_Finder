@@ -11,7 +11,7 @@ async function findRecipes() {
       return;
     }
   
-    const apiKey = "2374e479143146c7a21c4e09c4e1ae04"; // Replace with your actual Spoonacular API key
+    const apiKey = "[YOUR_API_KEY]"; // Replace with your actual Spoonacular API key
   
     try {
       const response = await fetch(
