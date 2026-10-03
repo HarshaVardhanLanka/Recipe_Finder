@@ -117,31 +117,35 @@
     }
 
     function displayFavorites() {
-      const favoritesDiv = document.getElementById("favorites");
-      const savedRecipes = JSON.parse(localStorage.getItem("favoriteRecipes")) || [];
+  const favoritesDiv = document.getElementById("favorites");
+  const savedRecipes = JSON.parse(localStorage.getItem("favoriteRecipes")) || [];
 
-      favoritesDiv.innerHTML = ""; // Clear existing recipes
+  favoritesDiv.innerHTML = ""; // Clear existing recipes
 
-      if (savedRecipes.length === 0) {
-        favoritesDiv.innerHTML = "<p>No favorite recipes saved yet.</p>";
-        return;
-      }
+  if (savedRecipes.length === 0) {
+    favoritesDiv.innerHTML = "<p>No favorite recipes saved yet.</p>";
+    return;
+  }
 
-      savedRecipes.forEach((recipe) => {
-        const favoriteCard = document.createElement("div");
-        favoriteCard.className = "favorite";
+  savedRecipes.forEach((recipe) => {
+    const favoriteCard = document.createElement("div");
+    favoriteCard.className = "favorite";
+    
+    // We escape single quotes in the title (like "Chef's Salad") so it doesn't break the HTML button
+    const safeTitle = recipe.title.replace(/'/g, "\\'");
 
-        favoriteCard.innerHTML = `
-          <img src="${recipe.image}" alt="${recipe.title}">
-          <div>
-            <h3>${recipe.title}</h3>
-            <a href="${recipe.url}" target="_blank">View Full Recipe</a>
-          </div>
-        `;
+    favoriteCard.innerHTML = `
+      <img src="${recipe.image}" alt="${recipe.title}">
+      <div>
+        <h3>${recipe.title}</h3>
+        <a href="${recipe.url}" target="_blank" style="display: block; margin-bottom: 10px;">View Full Recipe</a>
+        <button class="remove-btn" onclick="removeRecipe('${safeTitle}')">Remove Recipe</button>
+      </div>
+    `;
 
-        favoritesDiv.appendChild(favoriteCard);
-      });
-    }
+    favoritesDiv.appendChild(favoriteCard);
+  });
+}
 
     // Display favorites on page load
     window.onload = displayFavorites;
