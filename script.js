@@ -51,3 +51,16 @@ async function findRecipes() {
       recipesDiv.innerHTML = `<p>Error: ${error.message}</p>`;
     }
   }
+function removeRecipe(title) {
+  // 1. Get the current list of saved recipes
+  let savedRecipes = JSON.parse(localStorage.getItem("favoriteRecipes")) || [];
+  
+  // 2. Filter out the recipe that matches the title we want to remove
+  savedRecipes = savedRecipes.filter(recipe => recipe.title !== title);
+  
+  // 3. Save the newly updated list back to localStorage
+  localStorage.setItem("favoriteRecipes", JSON.stringify(savedRecipes));
+  
+  // 4. Refresh the display to show the recipe has been removed
+  displayFavorites();
+}
